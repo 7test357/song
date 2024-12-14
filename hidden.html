@@ -56,10 +56,6 @@
             max-width: 100%;
             position: relative;
         }
-        .video-container iframe {
-            width: 100%;
-            height: 100%;
-        }
         .controls, .arrow-controls {
             display: flex;
             justify-content: center;
@@ -160,9 +156,12 @@
                 iframe.style.display = index === 0 ? 'block' : 'none';
                 videoContainer.appendChild(iframe);
 
+                console.log(`Creating player for videoId: ${videoId}`);
+
                 const player = new YT.Player(iframe.id, {
                     videoId: videoId,
                     events: {
+                        'onReady': () => console.log(`Player ${index} ready.`),
                         'onStateChange': onPlayerStateChange
                     }
                 });
@@ -244,7 +243,7 @@
             document.getElementById('toggle-theme').textContent = buttonText;
         });
 
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
+        loadYouTubeAPI();
+    </script>
+</body>
+</html>
