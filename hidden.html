@@ -244,17 +244,46 @@
             document.getElementById('toggle-theme').textContent = buttonText;
         });
 
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        function setCookie(name, value, days) {
+            const expires = new Date(Date.now() + days * 864e5).toUTCString();
+            document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+        }
+
         function login() {
+            const isLoggedIn = getCookie("loggedIn");
+            if (isLoggedIn === "true") {
+                alert("이미 로그인되어 있습니다.");
+                return;
+            }
+
             const username = prompt("아이디를 입력하세요:");
             const password = prompt("비밀번호를 입력하세요:");
 
-            if (username !== "song" || password !== "song") {
+            if (username === "song" && password === "song") {
+                setCookie("loggedIn", "true", 7);
+                alert("로그인 성공!");
+            } else {
+                alert("아이디 또는 비밀번호가 틀렸습니다.");
                 window.location.href = "about:blank";
             }
         }
 
+        document.addEventListener("DOMContentLoaded", () => {
+            const isLoggedIn = getCookie("loggedIn");
+            if (isLoggedIn !== "true") {
+                login();
+            } else {
+                alert("환영합니다! 로그인이 유지되고 있습니다.");
+            }
+        });
+
         loadYouTubeAPI();
-        login();
     </script>
 </body>
 </html>
