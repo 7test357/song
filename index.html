@@ -213,6 +213,37 @@
             updateVideoDisplay();
         });
 
+        document.getElementById('fullscreen').addEventListener('click', () => {
+            const videoElement = document.getElementById(`video-${currentVideoIndex}`);
+            if (videoElement.requestFullscreen) {
+                videoElement.requestFullscreen();
+            } else if (videoElement.mozRequestFullScreen) {
+                videoElement.mozRequestFullScreen();
+            } else if (videoElement.webkitRequestFullscreen) {
+                videoElement.webkitRequestFullscreen();
+            } else if (videoElement.msRequestFullscreen) {
+                videoElement.msRequestFullscreen();
+            }
+        });
+
+        const volumeSlider = document.getElementById('volume');
+        const volumeLabel = document.getElementById('volume-label');
+
+        volumeSlider.addEventListener('input', () => {
+            const volumeValue = volumeSlider.value / 100;
+            players.forEach(player => {
+                player.setVolume(volumeValue * 100);
+            });
+            volumeLabel.textContent = `음량: ${volumeSlider.value}%`;
+        });
+
+        document.getElementById('toggle-theme').addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            const buttonText = isDarkMode ? '라이트모드' : '다크모드';
+            document.getElementById('toggle-theme').textContent = buttonText;
+        });
+
         loadYouTubeAPI();
     </script>
 </body>
