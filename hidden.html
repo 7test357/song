@@ -60,8 +60,6 @@
             display: flex;
             justify-content: center;
             margin: 10px 0;
-            position: relative;
-            z-index: 1;
         }
         .controls button, .arrow-controls button {
             margin: 0 10px;
@@ -69,35 +67,6 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-        }
-        .controls button {
-            background: #343a40;
-            color: white;
-        }
-        .controls button:hover {
-            background: #4CAF50;
-        }
-        .arrow-controls button {
-            font-size: 24px;
-            background: transparent;
-            color: #343a40;
-        }
-        .arrow-controls button:hover {
-            color: #4CAF50;
-        }
-        .volume-slider {
-            margin-left: 10px;
-        }
-        .dark-mode {
-            background-color: #333;
-            color: white;
-        }
-        .dark-mode .controls button, .dark-mode .arrow-controls button {
-            background: #555;
-            color: white;
-        }
-        .dark-mode .controls button:hover, .dark-mode .arrow-controls button:hover {
-            background: #4CAF50;
         }
     </style>
 </head>
@@ -117,133 +86,46 @@
     <div class="controls">
         <button id="play-pause">재생</button>
         <button id="fullscreen">전체화면</button>
-        <label for="volume">음량:</label>
-        <input type="range" id="volume" class="volume-slider" min="0" max="100" value="100">
-        <span id="volume-label">음량: 100%</span>
-        <button id="toggle-theme">다크모드</button>
-    </div>
-    <div class="arrow-controls">
-        <button id="prev-video">◀ 이전 영상</button>
-        <button id="next-video">다음 영상 ▶</button>
     </div>
 
     <script>
-        const videoIds = [
-            'dQw4w9WgXcQ',
-            'kCjEgmasFmU',
-            'liJAICH_igs',
-            'hICQ698QauM'
-        ];
-
-        let currentVideoIndex = 0;
-        let isPlaying = false;
-        let isDarkMode = false;
-
-        const videoContainer = document.getElementById('video-container');
-
-        function loadYouTubeAPI() {
-            const tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
-            document.body.appendChild(tag);
+        function setCookie(name, value, days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
         }
 
-        let players = [];
-
-        function onYouTubeIframeAPIReady() {
-            videoIds.forEach((videoId, index) => {
-                const iframe = document.createElement('div');
-                iframe.id = `video-${index}`;
-                iframe.style.display = index === 0 ? 'block' : 'none';
-                videoContainer.appendChild(iframe);
-
-                console.log(`Creating player for videoId: ${videoId}`);
-
-                const player = new YT.Player(iframe.id, {
-                    videoId: videoId,
-                    events: {
-                        'onReady': () => console.log(`Player ${index} ready.`),
-                        'onStateChange': onPlayerStateChange
-                    }
-                });
-                players.push(player);
-            });
-        }
-
-        function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.ENDED) {
-                currentVideoIndex = (currentVideoIndex + 1) % players.length;
-                updateVideoDisplay();
-            }
-        }
-
-        function updateVideoDisplay() {
-            players.forEach((player, index) => {
-                const iframe = document.getElementById(`video-${index}`);
-                iframe.style.display = index === currentVideoIndex ? 'block' : 'none';
-                if (index === currentVideoIndex) {
-                    player.playVideo();
-                } else {
-                    player.stopVideo();
+        function getCookie(name) {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(`${name}=`)) {
+                    return cookie.split('=')[1];
                 }
-            });
+            }
+            return null;
         }
 
-        document.getElementById('play-pause').addEventListener('click', () => {
-            const currentPlayer = players[currentVideoIndex];
-            if (isPlaying) {
-                currentPlayer.pauseVideo();
-                document.getElementById('play-pause').textContent = '재생';
+        function login() {
+            const username = prompt("아이디를 입력하세요:");
+            const password = prompt("비밀번호를 입력하세요:");
+
+            if (username === "song" && password === "song") {
+                setCookie("loggedIn", "true", 7);
+                alert("로그인 성공!");
             } else {
-                currentPlayer.playVideo();
-                document.getElementById('play-pause').textContent = '정지';
+                window.location.href = "about:blank";
             }
-            isPlaying = !isPlaying;
-        });
+        }
 
-        document.getElementById('next-video').addEventListener('click', () => {
-            players[currentVideoIndex].stopVideo();
-            currentVideoIndex = (currentVideoIndex + 1) % players.length;
-            updateVideoDisplay();
-        });
-
-        document.getElementById('prev-video').addEventListener('click', () => {
-            players[currentVideoIndex].stopVideo();
-            currentVideoIndex = (currentVideoIndex - 1 + players.length) % players.length;
-            updateVideoDisplay();
-        });
-
-        document.getElementById('fullscreen').addEventListener('click', () => {
-            const videoElement = document.getElementById(`video-${currentVideoIndex}`);
-            if (videoElement.requestFullscreen) {
-                videoElement.requestFullscreen();
-            } else if (videoElement.mozRequestFullScreen) {
-                videoElement.mozRequestFullScreen();
-            } else if (videoElement.webkitRequestFullscreen) {
-                videoElement.webkitRequestFullscreen();
-            } else if (videoElement.msRequestFullscreen) {
-                videoElement.msRequestFullscreen();
+        function checkLogin() {
+            const loggedIn = getCookie("loggedIn");
+            if (!loggedIn) {
+                login();
             }
-        });
+        }
 
-        const volumeSlider = document.getElementById('volume');
-        const volumeLabel = document.getElementById('volume-label');
-
-        volumeSlider.addEventListener('input', () => {
-            const volumeValue = volumeSlider.value / 100;
-            players.forEach(player => {
-                player.setVolume(volumeValue * 100);
-            });
-            volumeLabel.textContent = `음량: ${volumeSlider.value}%`;
-        });
-
-        document.getElementById('toggle-theme').addEventListener('click', () => {
-            isDarkMode = !isDarkMode;
-            document.body.classList.toggle('dark-mode', isDarkMode);
-            const buttonText = isDarkMode ? '라이트모드' : '다크모드';
-            document.getElementById('toggle-theme').textContent = buttonText;
-        });
-
-        loadYouTubeAPI();
+        checkLogin();
     </script>
 </body>
 </html>
